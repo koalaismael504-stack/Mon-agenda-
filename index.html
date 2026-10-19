@@ -25,7 +25,7 @@ td:first-child,th:first-child{position:sticky;left:0;background:var(--card);text
 .sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}.sum div{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px;text-align:center}.sum b{display:block;font-size:15px}
 .pos{color:var(--ac)}.neg{color:var(--bad)}details{margin:10px 0}summary{cursor:pointer;color:var(--ac)}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 0;color:var(--mu);font-size:12.5px}nav .on{color:var(--ac);font-weight:700}.bn{background:var(--ac2);border:1px solid var(--ac);border-radius:12px;padding:10px 12px;margin-bottom:10px}.bn b{color:var(--ac)}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}.cal button{padding:8px 0;position:relative;border-color:transparent;background:none}.cal .h{color:var(--mu);font-size:12px;padding:4px 0}.cal .sel{background:var(--ac);color:var(--bg);font-weight:700}.cal .td{border-color:var(--ac)}.cal i{position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--ac)}.cal .sel i{background:var(--bg)}.past{opacity:.45}.now b,.now span{color:var(--ac);font-weight:700}.late{color:var(--bad)}small.mu{font-size:12px}
+nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 0;color:var(--mu);font-size:12px}nav .on{color:var(--ac);font-weight:700}.bn{background:var(--ac2);border:1px solid var(--ac);border-radius:12px;padding:10px 12px;margin-bottom:10px}.bn b{color:var(--ac)}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}.cal button{padding:8px 0;position:relative;border-color:transparent;background:none}.cal .h{color:var(--mu);font-size:12px;padding:4px 0}.cal .sel{background:var(--ac);color:var(--bg);font-weight:700}.cal .td{border-color:var(--ac)}.cal i{position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--ac)}.cal .sel i{background:var(--bg)}.past{opacity:.45}.now b,.now span{color:var(--ac);font-weight:700}.late{color:var(--bad)}small.mu{font-size:12px}
 </style></head><body>
 <div id="bn"></div><div id="app"></div>
 <nav id="nav"></nav>
@@ -36,16 +36,16 @@ const TM=[];for(let h=8;h<=18;h++){const p=(h<10?"0":"")+h;TM.push(p+":00",p+":3
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");const K="agenda-finances-v1";let S,tab="today",cf="",day=(new Date().getDay()+6)%7,mois=new Date().toISOString().slice(0,7),cd=iso(new Date()),cy=new Date().getFullYear(),cmn=new Date().getMonth();
 const mk=a=>{const o={};a.forEach(([d,t,x])=>o[d+"|"+t]=x);return o};
 function seed(){return{active:"p1",plans:[{id:"p1",name:"Cours 2026-2027",slots:{}}],fam:[],pay:{},ops:[],tasks:[],notes:""}}
-try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S)S=seed();S.cfg=S.cfg||{lead:30,notif:false};S.ev=S.ev||[];
+try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S)S=seed();S.cfg=S.cfg||{lead:30,notif:false};S.ev=S.ev||[];S.log=S.log||[];
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
 const P=()=>S.plans.find(p=>p.id===S.active)||S.plans[0];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt=n=>Math.round(n).toLocaleString("fr-FR")+" F",fk=n=>n?(n/1000)+"K":"–",$=i=>document.getElementById(i);
 function vToday(){const n=new Date(),di=(n.getDay()+6)%7,p=P(),mo=n.getMonth()+1,cm=M.find(m=>m[1]===mo);
-const nm=n.getHours()*60+n.getMinutes(),it=dayItems(iso(n)),nx=it.find(x=>x.m>=nm),rows=it.map(x=>`<div class="row ${x.m+60<=nm?"past":x.m<=nm?"now":""}"><b>${x.t}</b><span>${esc(x.l)}${x.k==="rdv"?" 📌":""}</span></div>`).join("")||`<p class="mu" style="padding:0 12px">Aucun cours aujourd’hui.</p>`;
+const nm=n.getHours()*60+n.getMinutes(),it=TL=dayItems(iso(n)),nx=it.find(x=>x.m>=nm),rows=it.map((x,i)=>`<div class="row ${x.m+60<=nm?"past":x.m<=nm?"now":""}"><b>${x.t}</b><span>${esc(x.l)}${x.k==="rdv"?" 📌":""}</span>${x.k==="cours"?`<button class="x" onclick="fromLesson(${i})">📝</button>`:""}</div>`).join("")||`<p class="mu" style="padding:0 12px">Aucun cours aujourd’hui.</p>`;
 const unp=cm?S.fam.filter(f=>!S.pay[f.id+"|"+mo]).length:"–";
 return `<h2>${DL[di]} ${n.getDate()} ${n.toLocaleDateString("fr-FR",{month:"long"})}</h2><p class="mu">Planning actif : ${esc(p.name)}${nx?" · Prochain : "+nx.t+" "+esc(nx.l)+" (dans "+dl(nx.m-nm)+")":""}</p><div class="card">${rows}</div>
-<div class="grid2"><div class="card"><div class="mu">Paiements à saisir (ce mois)</div><div class="big">${unp}</div></div><div class="card"><div class="mu">Tâches ouvertes</div><div class="big">${S.tasks.filter(t=>!t.done).length}</div></div></div>${todayExtra(n)}`}
+<div class="grid2"><div class="card"><div class="mu">Paiements à saisir (ce mois)</div><div class="big">${unp}</div></div><div class="card"><div class="mu">Tâches ouvertes</div><div class="big">${S.tasks.filter(t=>!t.done).length}</div></div></div>${hwToday(it)}${todayExtra(n)}`}
 function vPlan(){const p=P(),names=[...new Set(S.plans.flatMap(q=>Object.values(q.slots)))];
 return `<select onchange="S.active=this.value;save();r()">${S.plans.map(q=>`<option value="${q.id}"${q.id===p.id?" selected":""}>${esc(q.name)}</option>`).join("")}</select>
 <div class="chips">${D.map((x,i)=>`<button class="${i===day?"on":""}" onclick="day=${i};r()">${x}</button>`).join("")}</div>
@@ -82,8 +82,8 @@ function vTasks(){return `<h2>Tâches à effectuer</h2><div class="card">${S.tas
 <textarea id="bk" rows="3" placeholder="Texte de sauvegarde"></textarea><div class="btns"><button onclick="ex()">Exporter</button><button onclick="im()">Importer</button></div>`}
 function addT(){const v=$("nt").value.trim();if(!v)return;S.tasks.push({t:v,done:false,due:$("ntd").value});save();r()}
 function ex(){const b=$("bk");b.value=JSON.stringify(S);b.select();try{navigator.clipboard.writeText(b.value)}catch(e){}}
-function im(){try{const v=JSON.parse($("bk").value);if(v&&v.plans&&v.fam){S=v;S.cfg=S.cfg||{lead:30,notif:false};S.ev=S.ev||[];save();r();return}}catch(e){}$("bk").value="";$("bk").placeholder="Sauvegarde invalide"}
-const tm=t=>parseInt(t.slice(0,2))*60+parseInt(t.slice(3)),dl=m=>m<60?m+" min":Math.floor(m/60)+" h"+(m%60?" "+m%60:""),p2=n=>String(n).padStart(2,"0");let fired={};
+function im(){try{const v=JSON.parse($("bk").value);if(v&&v.plans&&v.fam){S=v;S.cfg=S.cfg||{lead:30,notif:false};S.ev=S.ev||[];S.log=S.log||[];save();r();return}}catch(e){}$("bk").value="";$("bk").placeholder="Sauvegarde invalide"}
+const tm=t=>parseInt(t.slice(0,2))*60+parseInt(t.slice(3)),dl=m=>m<60?m+" min":Math.floor(m/60)+" h"+(m%60?" "+m%60:""),p2=n=>String(n).padStart(2,"0");let fired={},TL=[],cs="",cp=null;
 function dayItems(ds){const di=(new Date(ds+"T12:00").getDay()+6)%7,p=P(),a=[];TM.forEach(t=>{const x=p.slots[di+"|"+t];if(x)a.push({t,m:tm(t),l:x,k:"cours"})});S.ev.filter(e=>e.date===ds).forEach(e=>a.push({t:e.time,m:tm(e.time),l:e.title,k:"rdv",id:e.id}));return a.sort((x,y)=>x.m-y.m)}
 function vAgenda(){const f=new Date(cy,cmn,1),off=(f.getDay()+6)%7,nd=new Date(cy,cmn+1,0).getDate(),ti=iso(new Date());let c=D.map(x=>`<div class="h">${x[0]}</div>`).join("");for(let i=0;i<off;i++)c+="<div></div>";for(let d=1;d<=nd;d++){const ds=cy+"-"+p2(cmn+1)+"-"+p2(d);c+=`<button class="${ds===cd?"sel":ds===ti?"td":""}" onclick="cd='${ds}';r()">${d}${S.ev.some(e=>e.date===ds)?"<i></i>":""}</button>`}
 return `<div class="add" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><button onclick="mv(-1)">‹</button><b>${f.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</b><button onclick="mv(1)">›</button></div><div class="card" style="padding:8px"><div class="cal">${c}</div></div><h2>${new Date(cd+"T12:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</h2><div class="card">${dayItems(cd).map(x=>`<div class="row"><b>${x.t}</b><span>${esc(x.l)}${x.k==="rdv"?" 📌":""}</span>${x.id?`<button class="x" onclick="delEv('${x.id}')">✕</button>`:""}</div>`).join("")||`<p class="mu" style="padding:0 12px">Rien de prévu ce jour-là.</p>`}</div><div class="add"><input id="et" placeholder="Rendez-vous, réunion, événement…"></div><div class="add"><input id="ed" type="date" value="${cd}"><input id="eh" type="time" value="09:00" style="max-width:120px"><button class="pri" onclick="addEv()">Ajouter</button></div><p class="mu">Les cours viennent du planning actif. Les rendez-vous ajoutés ici déclenchent aussi un rappel.</p>`}
@@ -97,8 +97,28 @@ function setLead(v){S.cfg.lead=+v;save();r()}
 function askN(){try{Notification.requestPermission().then(p=>{S.cfg.notif=p==="granted";save();r()})}catch(e){}}
 function tick(){const n=new Date(),nm=n.getHours()*60+n.getMinutes(),ds=iso(n);let h="";dayItems(ds).filter(x=>x.m>=nm&&x.m-nm<=S.cfg.lead).forEach(x=>{h+=`<div class="bn">⏰ <b>${x.m===nm?"Maintenant":"Dans "+dl(x.m-nm)}</b> · ${x.t} · ${esc(x.l)}</div>`;const k=ds+x.t+x.l;if(S.cfg.notif&&!fired[k]){fired[k]=1;try{navigator.serviceWorker.ready.then(r=>r.showNotification(x.k==="rdv"?"Rappel":"Cours",{body:x.t+" · "+x.l,icon:"icon-192.png"}))}catch(e){}}});const late=S.tasks.filter(t=>!t.done&&t.due&&t.due<ds).length;if(late)h+=`<div class="bn">📝 <b>${late}</b> tâche${late>1?"s":""} en retard</div>`;$("bn").innerHTML=h}
 setInterval(()=>{if(tab==="today")r();else tick()},30000);
-function go(t){tab=t;cf="";r();scrollTo(0,0)}
-function r(){$("app").innerHTML={today:vToday,plan:vPlan,ag:vAgenda,pay:vPay,tasks:vTasks}[tab]();tick();
-$("nav").innerHTML=[["today","Aujourd’hui"],["plan","Planning"],["ag","Agenda"],["pay","Paie"],["tasks","Tâches"]].map(x=>`<button class="${tab===x[0]?"on":""}" onclick="go('${x[0]}')">${x[1]}</button>`).join("")}
+const LS={ok:"Effectuée",abs:"Élève absent",rep:"Reportée",ann:"Annulée"};
+function vCahier(){const f=cp||{},all=[...new Set(S.log.map(e=>e.student))].sort(),names=[...new Set([...all,...S.plans.flatMap(q=>Object.values(q.slots))])].filter(Boolean).sort(),
+L=S.log.filter(e=>!cs||e.student===cs).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)),
+dm=d=>d.slice(8)+"/"+d.slice(5,7),
+stats=all.map(s=>{const l=S.log.filter(e=>e.student===s),w=l.filter(e=>e.hw&&!e.done).length;return `<tr><td>${esc(s)}</td><td>${l.filter(e=>e.st==="ok").length}</td><td>${l.filter(e=>e.st==="abs").length}</td><td class="${w?"late":""}">${w}</td></tr>`}).join("");
+return `<h2>Cahier de texte</h2><datalist id="cn">${names.map(n=>`<option value="${esc(n)}">`).join("")}</datalist>
+<div class="add"><input id="le" list="cn" placeholder="Élève" value="${esc(f.student||"")}"><input id="ld" type="date" value="${f.date||iso(new Date())}" style="max-width:150px"></div>
+<div class="add"><input id="lm" placeholder="Matière (ex. Maths)"><select id="lt" style="max-width:140px">${Object.entries(LS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></div>
+<textarea id="lc" rows="2" placeholder="Contenu de la séance (leçon vue, points travaillés)"></textarea>
+<textarea id="lh" rows="2" placeholder="Exercices donnés (à faire pour la prochaine séance)" style="margin-top:8px"></textarea>
+<div class="btns"><button class="pri" onclick="addLog()">Enregistrer la séance</button></div>
+<h2>Suivi des élèves</h2><div class="card sc"><table><tr><th>Élève</th><th>Séances</th><th>Absences</th><th>Exos en attente</th></tr>${stats||`<tr><td colspan="4" class="mu">Aucune séance enregistrée.</td></tr>`}</table></div>
+<h2>Historique</h2><select onchange="cs=this.value;r()"><option value="">Tous les élèves</option>${all.map(s=>`<option${s===cs?" selected":""}>${esc(s)}</option>`).join("")}</select>
+<div style="margin-top:10px">${L.map(e=>`<div class="card" style="padding:10px 12px"><div style="display:flex;gap:8px;align-items:center"><b>${esc(e.student)}</b><span class="mu" style="flex:1">${dm(e.date)}${e.sub?" · "+esc(e.sub):""} · ${LS[e.st]||""}</span><button class="x" onclick="delLog('${e.id}')">✕</button></div>${e.c?`<div>${esc(e.c)}</div>`:""}${e.hw?`<label class="row" style="padding:6px 0 0;border:0"><input type="checkbox"${e.done?" checked":""} onchange="tgLog('${e.id}')"><span class="${e.done?"dn":""}">Exercices : ${esc(e.hw)}</span></label>`:""}</div>`).join("")||`<p class="mu">Rien pour le moment.</p>`}</div>`}
+function addLog(){const s=$("le").value.trim();if(!s)return;S.log.push({id:"l"+Date.now(),date:$("ld").value||iso(new Date()),student:s,sub:$("lm").value.trim(),c:$("lc").value.trim(),hw:$("lh").value.trim(),st:$("lt").value,done:false});cp=null;save();r()}
+function tgLog(id){const e=S.log.find(x=>x.id===id);e.done=!e.done;save();r()}
+function delLog(id){S.log=S.log.filter(x=>x.id!==id);save();r()}
+function fromLesson(i){cp={student:TL[i].l,date:iso(new Date())};tab="cahier";cs="";r();scrollTo(0,0)}
+function hwToday(it){const ns=it.filter(x=>x.k==="cours").map(x=>x.l.toLowerCase()),p=S.log.filter(e=>e.hw&&!e.done&&ns.some(n=>n.includes(e.student.toLowerCase())));
+return p.length?`<h2>Exercices à vérifier aujourd’hui</h2><div class="card">${p.map(e=>`<label class="row"><input type="checkbox" onchange="tgLog('${e.id}')"><span><b style="width:auto">${esc(e.student)}</b> · ${esc(e.hw)} <small class="mu">(${e.date.slice(8)}/${e.date.slice(5,7)})</small></span></label>`).join("")}</div>`:""}
+function go(t){tab=t;cf="";cp=null;r();scrollTo(0,0)}
+function r(){$("app").innerHTML={today:vToday,plan:vPlan,ag:vAgenda,cahier:vCahier,pay:vPay,tasks:vTasks}[tab]();tick();
+$("nav").innerHTML=[["today","Accueil"],["plan","Planning"],["ag","Agenda"],["cahier","Cahier"],["pay","Paie"],["tasks","Tâches"]].map(x=>`<button class="${tab===x[0]?"on":""}" onclick="go('${x[0]}')">${x[1]}</button>`).join("")}
 r();
 </script><script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>
